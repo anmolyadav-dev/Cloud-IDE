@@ -28,6 +28,10 @@ ptyProcess.onData(data => {
 
 io.on("connection", (socket) => {
     console.log(`socket connected`, socket.id)
+
+    // Nudge bash to re-print the prompt for the newly connected client
+    ptyProcess.write('\n')
+
     socket.on('terminal:write', (data) => {
         ptyProcess.write(data)
     })
