@@ -57,7 +57,7 @@ app.get('/files', async (req, res) => {
 app.get('/files/content', async (req, res) => {
     const { path } = req.query
     const content = await fs.readFile(`./user/${path}`, 'utf-8')
-    return res.json(content)
+    return res.send(content)
 })
 
 server.listen(9000, () => console.log(`Docker server running on port 9000`))

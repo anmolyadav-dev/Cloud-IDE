@@ -17,7 +17,9 @@ function App() {
   const [sidebarWidth, setSidebarWidth] = useState(250)
   const [terminalHeight, setTerminalHeight] = useState(250)
   const [selectedFile, setSelectedFile] = useState('')
+  const [selectedFileContent, setSelectedFileContent] = useState("")
   const [code, setCode] = useState("")
+  const isSaved = selectedFileContent === code
   const isResizingSidebar = useRef(false)
   const isResizingTerminal = useRef(false)
 
@@ -32,6 +34,17 @@ function App() {
       console.error("Failed to fetch file tree", e)
     }
   }
+
+  const getFileContents = useCallback(async () => {
+    try {
+      if (!selectedFile) return;
+      const response = await fetch(`http://localhost:9000/files/content?path=${selectedFile}`)
+      const data = await response.text()
+      setSelectedFileContent(data)
+    } catch (e) {
+      console.error("Failed to fetch file content", e)
+    }
+  }, [selectedFile])
 
   useEffect(() => {
     getFileTree()
@@ -85,7 +98,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (code) {
+    if (code && !isSaved) {
       const timer = setTimeout(() => {
 
         socket.emit("file:change", { content: code, path: selectedFile })
@@ -96,11 +109,16 @@ function App() {
 
   useEffect(() => {
     if (selectedFile) {
-      fetch(`http://localhost:9000/files/content?path=${selectedFile}`)
-        .then(res => res.json())
-        .then(data => setCode(data))
+      getFileContents()
     }
-  }, [selectedFile])
+    setCode("")
+  }, [selectedFile, getFileContents])
+
+  useEffect(() => {
+    if (selectedFile && selectedFileContent) {
+      setCode(selectedFileContent)
+    }
+  }, [selectedFileContent])
   return (
     <div className='playground-container'>
       {/* Header */}
