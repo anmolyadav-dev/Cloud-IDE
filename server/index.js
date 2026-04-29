@@ -11,10 +11,19 @@ const { v4: uuidv4 } = require('uuid')
 
 const app = express()
 const server = http.createServer(app)
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://cloud-ide-roan.vercel.app'
+
 const io = new SocketServer({
-    cors: '*'
+    cors: {
+        origin: [FRONTEND_URL, 'http://localhost:5173'],
+        methods: ["GET", "POST"]
+    }
 })
-app.use(cors())
+
+app.use(cors({
+    origin: [FRONTEND_URL, 'http://localhost:5173']
+}))
 io.attach(server)
 
 // Store active sessions: sessionId -> { ptyProcess, watcher, workspacePath }
