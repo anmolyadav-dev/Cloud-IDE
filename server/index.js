@@ -9,7 +9,7 @@ const ptyProcess = pty.spawn('bash', [], {
     cols: 80,
     rows: 30,
     env: process.env,
-    cwd: process.env.INIT_CWD
+    cwd: process.env.INIT_CWD + '/user'
 })
 
 
