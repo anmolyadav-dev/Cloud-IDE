@@ -2,12 +2,12 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/:match*",
-      "destination": "http://13.60.88.124:9000/:match*"
+      "source": "/api/:path*",
+      "destination": "http://ec2-13-60-88-124.eu-north-1.compute.amazonaws.com:9000/:path*"
     },
     {
-      "source": "/socket.io/:match*",
-      "destination": "http://13.60.88.124:9000/socket.io/:match*"
+      "source": "/socket.io/:path*",
+      "destination": "http://ec2-13-60-88-124.eu-north-1.compute.amazonaws.com:9000/socket.io/:path*"
     }
   ]
 }
