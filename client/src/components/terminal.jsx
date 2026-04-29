@@ -23,6 +23,7 @@ const Terminal = () => {
         term.open(terminalRef.current)
         fitAddon.fit()
         term.onData((data) => {
+            console.log(data)
             socket.emit("terminal:write", data)
         })
         socket.on("terminal:data", (data) => {
@@ -37,7 +38,7 @@ const Terminal = () => {
 
         return () => {
             resizeObserver.disconnect()
-            socket.off('terminal:data')
+
         }
 
 
