@@ -12,18 +12,22 @@ const { v4: uuidv4 } = require('uuid')
 const app = express()
 const server = http.createServer(app)
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://cloud-ide-roan.vercel.app'
+// Add a simple logger to see what's hitting the server
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
-// Standard way to initialize Socket.io
+// Temporarily allow ALL origins to rule out CORS issues
 const io = new SocketServer(server, {
     cors: {
-        origin: [FRONTEND_URL, 'http://localhost:5173'],
+        origin: "*",
         methods: ["GET", "POST"]
     }
 })
 
 app.use(cors({
-    origin: [FRONTEND_URL, 'http://localhost:5173']
+    origin: "*"
 }))
 
 // Health check route
