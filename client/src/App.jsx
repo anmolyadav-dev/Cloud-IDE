@@ -12,6 +12,7 @@ import "ace-builds/src-noconflict/ext-language_tools";
 
 
 function App() {
+  const [sessionId, setSessionId] = useState(null)
   const [fileTree, setFileTree] = useState({})
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(250)
@@ -23,9 +24,19 @@ function App() {
   const isResizingSidebar = useRef(false)
   const isResizingTerminal = useRef(false)
 
-  const getFileTree = async () => {
+  // Wait for the server to assign us a session
+  useEffect(() => {
+    socket.on('session:init', ({ sessionId: sid }) => {
+      console.log('Session initialized:', sid)
+      setSessionId(sid)
+    })
+    return () => socket.off('session:init')
+  }, [])
+
+  const getFileTree = useCallback(async () => {
+    if (!sessionId) return
     try {
-      const response = await fetch("http://localhost:9000/files")
+      const response = await fetch(`http://localhost:9000/files?sessionId=${sessionId}`)
       const data = await response.json()
       if (data && data.files) {
         setFileTree(data.files)
@@ -33,26 +44,31 @@ function App() {
     } catch (e) {
       console.error("Failed to fetch file tree", e)
     }
-  }
+  }, [sessionId])
 
   const getFileContents = useCallback(async () => {
     try {
-      if (!selectedFile) return;
-      const response = await fetch(`http://localhost:9000/files/content?path=${selectedFile}`)
+      if (!selectedFile || !sessionId) return;
+      const response = await fetch(`http://localhost:9000/files/content?sessionId=${sessionId}&path=${selectedFile}`)
       const data = await response.text()
       setSelectedFileContent(data)
     } catch (e) {
       console.error("Failed to fetch file content", e)
     }
-  }, [selectedFile])
+  }, [selectedFile, sessionId])
 
+  // Fetch file tree once session is ready
   useEffect(() => {
-    getFileTree()
-  }, [])
+    if (sessionId) {
+      getFileTree()
+    }
+  }, [sessionId, getFileTree])
+
+  // Listen for file system changes from our session's watcher
   useEffect(() => {
     socket.on('files:refresh', getFileTree)
     return () => socket.off('files:refresh', getFileTree)
-  }, [])
+  }, [getFileTree])
 
   // ---- Sidebar drag logic ----
   const startSidebarResize = useCallback((e) => {
@@ -100,7 +116,6 @@ function App() {
   useEffect(() => {
     if (code && !isSaved) {
       const timer = setTimeout(() => {
-
         socket.emit("file:change", { content: code, path: selectedFile })
       }, 5000)
       return () => clearTimeout(timer)
@@ -119,6 +134,20 @@ function App() {
       setCode(selectedFileContent)
     }
   }, [selectedFileContent])
+
+  // Show a loading state until the session is ready
+  if (!sessionId) {
+    return (
+      <div className='playground-container' style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16 }}>
+          ⚡ Spinning up your environment...
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className='playground-container'>
       {/* Header */}
@@ -131,6 +160,7 @@ function App() {
           {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
         </button>
         <span className='app-title'>Cloud IDE</span>
+        <span className='session-badge'>Session: {sessionId.slice(0, 8)}</span>
       </div>
 
       {/* Body */}
