@@ -14,7 +14,8 @@ const server = http.createServer(app)
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://cloud-ide-roan.vercel.app'
 
-const io = new SocketServer({
+// Standard way to initialize Socket.io
+const io = new SocketServer(server, {
     cors: {
         origin: [FRONTEND_URL, 'http://localhost:5173'],
         methods: ["GET", "POST"]
@@ -24,7 +25,11 @@ const io = new SocketServer({
 app.use(cors({
     origin: [FRONTEND_URL, 'http://localhost:5173']
 }))
-io.attach(server)
+
+// Health check route
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() })
+})
 
 // Store active sessions: sessionId -> { ptyProcess, watcher, workspacePath }
 const sessions = new Map()
