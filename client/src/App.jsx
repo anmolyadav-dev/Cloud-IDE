@@ -4,12 +4,20 @@ import './App.css'
 import Terminal from './components/terminal'
 import FileTree from './components/tree'
 import socket from './socket'
+import ReactAce from 'react-ace'
+const AceEditor = ReactAce.default || ReactAce;
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/ext-language_tools";
+
+
 function App() {
   const [fileTree, setFileTree] = useState({})
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(250)
   const [terminalHeight, setTerminalHeight] = useState(250)
-
+  const [selectedFile, setSelectedFile] = useState('')
+  const [code, setCode] = useState("")
   const isResizingSidebar = useRef(false)
   const isResizingTerminal = useRef(false)
 
@@ -76,6 +84,23 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (code) {
+      const timer = setTimeout(() => {
+
+        socket.emit("file:change", { content: code, path: selectedFile })
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [code])
+
+  useEffect(() => {
+    if (selectedFile) {
+      fetch(`http://localhost:9000/files/content?path=${selectedFile}`)
+        .then(res => res.json())
+        .then(data => setCode(data))
+    }
+  }, [selectedFile])
   return (
     <div className='playground-container'>
       {/* Header */}
@@ -99,7 +124,7 @@ function App() {
             <>
               <div className='sidebar-panel' style={{ width: sidebarWidth }}>
                 <div className='files-container'>
-                  <FileTree tree={fileTree} />
+                  <FileTree tree={fileTree} onSelect={(path) => setSelectedFile(path)} />
                 </div>
               </div>
               <div className='resize-handle-h' onMouseDown={startSidebarResize} />
@@ -108,9 +133,20 @@ function App() {
 
           {/* Editor */}
           <div className='editor-panel'>
-            <div className='editor-placeholder'>
-              <p>Editor Area</p>
-            </div>
+            {selectedFile && <p style={{ padding: "0px 8px" }}>{selectedFile.replaceAll("/", " > ")}</p>}
+            <AceEditor
+              mode="javascript"
+              theme="monokai"
+              width="100%"
+              height="100%"
+              setOptions={{
+                useWorker: false,
+                fontSize: 14,
+                showPrintMargin: false
+              }}
+              onChange={(code) => setCode(code)}
+              value={code}
+            />
           </div>
         </div>
 

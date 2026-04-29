@@ -42,6 +42,11 @@ io.on("connection", (socket) => {
     socket.on('terminal:write', (data) => {
         ptyProcess.write(data)
     })
+
+    socket.on('file:change', async ({ content, path }) => {
+        await fs.writeFile(`./user/${path}`, content)
+        console.log("file saved", path)
+    })
 })
 
 
@@ -49,7 +54,11 @@ app.get('/files', async (req, res) => {
     const fileTree = await generateFileTree('./user')
     return res.json({ files: fileTree })
 })
-
+app.get('/files/content', async (req, res) => {
+    const { path } = req.query
+    const content = await fs.readFile(`./user/${path}`, 'utf-8')
+    return res.json(content)
+})
 
 server.listen(9000, () => console.log(`Docker server running on port 9000`))
 

@@ -1,19 +1,25 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Folder, FolderOpen, File, ChevronRight, ChevronDown } from 'lucide-react';
+import { useEffect } from 'react';
 
-const FileTreeNode = ({ fileName, nodes, level = 0 }) => {
+const FileTreeNode = ({ fileName, nodes, level = 0, onSelect, path }) => {
     const isDir = nodes !== null && typeof nodes === 'object';
     const [isOpen, setIsOpen] = useState(false);
+
 
     const toggleOpen = () => {
         if (isDir) setIsOpen(!isOpen);
     };
 
     return (
-        <div className="file-tree-node">
-            <div 
-                className={`file-tree-item ${isDir ? 'is-dir' : 'is-file'}`} 
+        <div onClick={(e) => {
+            e.stopPropagation()
+            if (isDir) return;
+            onSelect(path)
+        }} className="file-tree-node">
+            <div
+                className={`file-tree-item ${isDir ? 'is-dir' : 'is-file'}`}
                 style={{ paddingLeft: `${level * 16 + 8}px` }}
                 onClick={toggleOpen}
             >
@@ -44,11 +50,13 @@ const FileTreeNode = ({ fileName, nodes, level = 0 }) => {
                         >
                             <div className="file-tree-children">
                                 {Object.keys(nodes).map(child => (
-                                    <FileTreeNode 
-                                        key={child} 
-                                        fileName={child} 
-                                        nodes={nodes[child]} 
-                                        level={level + 1} 
+                                    <FileTreeNode
+                                        key={child}
+                                        fileName={child}
+                                        nodes={nodes[child]}
+                                        level={level + 1}
+                                        path={path + '/' + child}
+                                        onSelect={onSelect}
                                     />
                                 ))}
                             </div>
@@ -60,15 +68,15 @@ const FileTreeNode = ({ fileName, nodes, level = 0 }) => {
     );
 };
 
-const FileTree = ({ tree }) => {
+const FileTree = ({ tree, onSelect }) => {
     if (!tree) return null;
-    
+
     return (
         <div className="file-tree-root">
             <div className="file-tree-header">EXPLORER</div>
             <div className="file-tree-content">
                 {Object.keys(tree).map(child => (
-                     <FileTreeNode key={child} fileName={child} nodes={tree[child]} level={0} />
+                    <FileTreeNode onSelect={onSelect} key={child} path={child} fileName={child} nodes={tree[child]} level={0} />
                 ))}
             </div>
         </div>
