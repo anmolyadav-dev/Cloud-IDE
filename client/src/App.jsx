@@ -3,7 +3,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import './App.css'
 import Terminal from './components/terminal'
 import FileTree from './components/tree'
-
+import socket from './socket'
 function App() {
   const [fileTree, setFileTree] = useState({})
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -27,6 +27,10 @@ function App() {
 
   useEffect(() => {
     getFileTree()
+  }, [])
+  useEffect(() => {
+    socket.on('files:refresh', getFileTree)
+    return () => socket.off('files:refresh', getFileTree)
   }, [])
 
   // ---- Sidebar drag logic ----
@@ -77,11 +81,11 @@ function App() {
       {/* Header */}
       <div className='app-header'>
         <button
-            className='hamburger-btn'
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            title={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          className='hamburger-btn'
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          title={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
-            {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
         </button>
         <span className='app-title'>Cloud IDE</span>
       </div>

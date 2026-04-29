@@ -37,7 +37,10 @@ const Terminal = () => {
 
         return () => {
             resizeObserver.disconnect()
+            socket.off('terminal:data')
         }
+
+
     }, [])
 
     return (

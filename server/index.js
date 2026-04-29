@@ -5,6 +5,9 @@ const fs = require('fs/promises')
 const pty = require('node-pty')
 const path = require('path')
 const cors = require('cors')
+const chokidar = require('chokidar')
+
+
 const ptyProcess = pty.spawn('bash', [], {
     name: 'xterm-256color',
     cols: 80,
@@ -21,6 +24,10 @@ const io = new SocketServer({
 })
 app.use(cors())
 io.attach(server)
+
+chokidar.watch('./user',).on('all', (event, path) => {
+    io.emit('files:refresh', path)
+})
 
 ptyProcess.onData(data => {
     io.emit('terminal:data', data)
