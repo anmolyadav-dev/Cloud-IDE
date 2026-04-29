@@ -1,12 +1,13 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://13.60.88.124/:path*"
+      "destination": "http://13.60.88.124:9000/:path*"
     },
     {
       "source": "/socket.io/:path*",
-      "destination": "http://13.60.88.124/socket.io/:path*"
+      "destination": "http://13.60.88.124:9000/socket.io/:path*"
     }
   ]
 }
