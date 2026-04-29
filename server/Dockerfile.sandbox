@@ -1,0 +1,7 @@
+FROM node:18-slim
+
+# node:18-slim already includes: bash, node, npm, git, curl
+# No apt-get needed — avoids DNS issues during build
+
+WORKDIR /workspace
+CMD ["bash"]
