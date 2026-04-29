@@ -4,7 +4,14 @@ function App() {
 
   return (
     <>
-      <Terminal />
+      <div className='playground-container'>
+        <div className='editor-container'>
+
+        </div>
+        <div className='terminal-container'>
+          <Terminal />
+        </div>
+      </div>
     </>
   )
 }
