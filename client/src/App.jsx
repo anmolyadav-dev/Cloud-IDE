@@ -36,8 +36,7 @@ function App() {
   const getFileTree = useCallback(async () => {
     if (!sessionId) return
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:9000')
-      const response = await fetch(`${baseUrl}/files?sessionId=${sessionId}`)
+      const response = await fetch(`http://localhost:9000/files?sessionId=${sessionId}`)
       const data = await response.json()
       if (data && data.files) {
         setFileTree(data.files)
@@ -50,8 +49,7 @@ function App() {
   const getFileContents = useCallback(async () => {
     try {
       if (!selectedFile || !sessionId) return;
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:9000')
-      const response = await fetch(`${baseUrl}/files/content?sessionId=${sessionId}&path=${selectedFile}`)
+      const response = await fetch(`http://localhost:9000/files/content?sessionId=${sessionId}&path=${selectedFile}`)
       const data = await response.text()
       setSelectedFileContent(data)
     } catch (e) {

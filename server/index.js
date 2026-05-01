@@ -12,28 +12,11 @@ const { v4: uuidv4 } = require('uuid')
 const app = express()
 const server = http.createServer(app)
 
-// Add a simple logger to see what's hitting the server
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
-
-// Temporarily allow ALL origins to rule out CORS issues
-const io = new SocketServer(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+const io = new SocketServer({
+    cors: '*'
 })
-
-app.use(cors({
-    origin: "*"
-}))
-
-// Health check route
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString() })
-})
+app.use(cors())
+io.attach(server)
 
 // Store active sessions: sessionId -> { ptyProcess, watcher, workspacePath }
 const sessions = new Map()
